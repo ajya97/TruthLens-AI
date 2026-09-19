@@ -7,8 +7,6 @@ from src.trainer import trainer
 
 main = Blueprint("main", __name__)
 
-vectorizer_model = joblib.load("models/vectorizer.pkl")
-model = joblib.load("models/model.pkl")
 
 
 # Home Page
@@ -35,7 +33,7 @@ def predict():
         )
     try:
         # Prediction
-        result = predict_news(news_text,vectorizer_model,model)
+        result = predict_news(news_text)
 
         return render_template(
             "predict.html",
@@ -88,7 +86,7 @@ def api_predict():
             }), 400
 
         # Prediction
-        result = predict_news(news_text,vectorizer_model,model)
+        result = predict_news(news_text)
 
         return jsonify({
             "success": True,
