@@ -1,0 +1,24 @@
+# ============================================
+# Fake News Detection System - Dependencies
+# Python 3.11+
+# ============================================
+
+# Data Processing
+numpy==2.2.6
+pandas==2.3.2
+
+# Data Visualization
+matplotlib==3.10.6
+seaborn==0.13.2
+
+# Natural Language Processing
+nltk==3.9.1
+
+# Machine Learning
+scikit-learn==1.7.2
+
+# Web Application
+Flask==3.1.2
+
+# Model Serialization
+joblib==1.5.2

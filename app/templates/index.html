@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TruthLens AI — AI-Powered Fake News Detection</title>
+  <meta name="description" content="Analyze news content with machine learning and see whether it is likely to be real or fake.">
+  <meta name="theme-color" content="#0f1319">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%230f1319'/%3E%3Ccircle cx='14' cy='14' r='6' fill='none' stroke='%237c9cff' stroke-width='2.5'/%3E%3Cpath d='M18.5 18.5 23 23' stroke='%237c9cff' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body data-page="home"
+      data-api-predict="{{ url_for('main.api_predict') }}"
+      data-api-health="{{ url_for('main.health') }}">
+
+  <!-- Icon sprite -->
+  <svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+    <symbol id="i-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+    <symbol id="i-file" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></symbol>
+    <symbol id="i-clipboard" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4h6a1 1 0 0 1 1 1v1H8V5a1 1 0 0 1 1-1z"/><path d="M16 6h1.5A1.5 1.5 0 0 1 19 7.5v11a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 5 18.5v-11A1.5 1.5 0 0 1 6.5 6H8"/></symbol>
+    <symbol id="i-scan" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2M8 12h8"/></symbol>
+    <symbol id="i-gauge" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17a8 8 0 1 1 16 0"/><path d="M12 17l3.5-4.5"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4M12 17h.01"/></symbol>
+    <symbol id="i-check-circle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m8.5 12.5 2.5 2.5 4.5-5"/></symbol>
+    <symbol id="i-help" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 1-1 1.7M12 17h.01"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/></symbol>
+    <symbol id="i-refresh" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 0 0-14.5-3.5L4 9M4 4v5h5M4 13a8 8 0 0 0 14.5 3.5L20 15M20 20v-5h-5"/></symbol>
+    <symbol id="i-pencil" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L18.5 9.5a2.12 2.12 0 0 0-3-3L5 17z"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></symbol>
+  </svg>
+
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <!-- ===== Header ===== -->
+  <header class="site-header">
+    <div class="container site-header__inner">
+      <a class="brand" href="#top" aria-label="TruthLens AI — home">
+        <svg class="brand__mark" viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+          <rect x="1" y="1" width="30" height="30" rx="9" fill="rgba(124,156,255,0.12)" stroke="#2a3243"/>
+          <circle cx="14.5" cy="14.5" r="6" fill="none" stroke="#7c9cff" stroke-width="2"/>
+          <path d="M11.5 14.5h6" stroke="#7c9cff" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M19 19l4.5 4.5" stroke="#7c9cff" stroke-width="2.2" stroke-linecap="round"/>
+        </svg>
+        <span class="brand__text">
+          <span class="brand__name">TruthLens AI</span>
+          <span class="brand__tag">AI-Powered Fake News Detection</span>
+        </span>
+      </a>
+
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="Open menu">
+        <svg class="icon" aria-hidden="true"><use href="#i-menu"/></svg>
+      </button>
+
+      <nav class="nav" id="site-nav" aria-label="Primary">
+        <a href="#top" aria-current="true">Home</a>
+        <a href="#how">How It Works</a>
+        <a href="#api">API</a>
+        <a href="#about">About</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+
+    <!-- ===== Hero ===== -->
+    <section class="hero" id="top" aria-labelledby="hero-title">
+      <div class="container hero__inner">
+        <div class="hero__copy">
+          <h1 id="hero-title" data-rise style="--i:0">Can AI tell if the news is real?</h1>
+          <p class="hero__lead" data-rise style="--i:1">Analyze news content using machine learning and discover whether it is likely to be real or fake.</p>
+          <div class="hero__actions" data-rise style="--i:2">
+            <a class="btn btn--primary" href="#analyze">
+              Analyze an article
+              <svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg>
+            </a>
+            <a class="btn btn--secondary" href="#how">How it works</a>
+          </div>
+        </div>
+
+        <!-- Decorative: a document being read by a scan line -->
+        <div class="doc" aria-hidden="true" data-rise style="--i:3">
+          <span class="doc__line doc__line--title" style="--i:0;--w:62%"></span>
+          <span class="doc__line" style="--i:1;--w:100%"></span>
+          <span class="doc__line" style="--i:2;--w:94%"></span>
+          <span class="doc__line" style="--i:3;--w:100%"></span>
+          <span class="doc__line" style="--i:4;--w:72%"></span>
+          <span class="doc__line" style="--i:5;--w:100%"></span>
+          <span class="doc__line" style="--i:6;--w:90%"></span>
+          <span class="doc__line" style="--i:7;--w:97%"></span>
+          <span class="doc__line" style="--i:8;--w:100%"></span>
+          <span class="doc__line" style="--i:9;--w:46%"></span>
+          <span class="doc__scan"></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== Detector ===== -->
+    <section class="detector" id="analyze" aria-labelledby="detector-title">
+      <div class="container--narrow">
+        <div class="card detector__card">
+          <div class="detector__head">
+            <h2 id="detector-title">Check a news article</h2>
+            <p class="hint"><kbd>Ctrl</kbd> + <kbd>Enter</kbd> to analyze</p>
+          </div>
+
+          <form id="detector-form" action="{{ url_for('main.predict') }}" method="post" novalidate>
+            <label class="sr-only" for="news_text">News text to analyze</label>
+            <div class="field">
+              <textarea id="news_text" name="news_text" rows="6" spellcheck="true" autocomplete="off"
+                        aria-describedby="char-count word-count form-error"
+                        placeholder="Paste a news article, headline, or news paragraph here..."></textarea>
+              <div class="field__scan" aria-hidden="true"></div>
+              <div class="field__bar">
+                <p class="field__meta">
+                  <span id="char-count">0 characters</span>
+                  <span id="word-count">0 words</span>
+                </p>
+                <div class="field__tools">
+                  <button class="btn btn--ghost" type="button" id="btn-sample">
+                    <svg class="icon" aria-hidden="true"><use href="#i-file"/></svg>
+                    Try Sample
+                  </button>
+                  <button class="btn btn--ghost" type="button" id="btn-clear" disabled>
+                    <svg class="icon" aria-hidden="true"><use href="#i-x"/></svg>
+                    Clear
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="alert" id="form-error" role="alert" {% if not error %}hidden{% endif %}>
+              <svg class="icon" aria-hidden="true"><use href="#i-alert"/></svg>
+              <p id="form-error-text">{% if error %}{% if error.startswith('Please enter') %}Please enter some news text first.{% else %}We couldn't analyze this content right now. Please try again.{% endif %}{% endif %}</p>
+            </div>
+
+            <ol class="progress" id="progress" aria-hidden="true" hidden>
+              <li>Analyzing content…</li>
+              <li>Checking linguistic patterns…</li>
+              <li>Evaluating model signals…</li>
+            </ol>
+            <p class="slow-note" id="slow-note" aria-hidden="true" hidden>This is taking longer than usual. The service may be starting up.</p>
+            <p class="sr-only" id="sr-status" role="status" aria-live="polite"></p>
+
+            <div class="form-actions">
+              <button class="btn btn--primary" type="submit" id="btn-analyze">
+                <span class="btn__label">Analyze News</span>
+                <svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg>
+                <span class="btn__scan" aria-hidden="true"></span>
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Result (filled in by app.js) -->
+        <section class="result" id="result" data-state="real" tabindex="-1" aria-labelledby="result-title" hidden>
+          <div class="result__top">
+            <div class="verdict">
+              <span class="verdict__icon" aria-hidden="true">
+                <svg class="icon"><use id="result-icon" href="#i-check-circle"/></svg>
+              </span>
+              <div>
+                <h2 class="verdict__title" id="result-title">Likely Real News</h2>
+                <p class="verdict__sub" id="result-sub"></p>
+              </div>
+            </div>
+
+            <div class="ring-wrap">
+              <div class="ring" role="img" aria-label="Model confidence">
+                <svg viewBox="0 0 120 120" aria-hidden="true" focusable="false">
+                  <circle class="ring__track" cx="60" cy="60" r="52" fill="none" stroke-width="8"/>
+                  <circle class="ring__value" id="ring-value" cx="60" cy="60" r="52" fill="none" stroke-width="8"
+                          stroke-dasharray="326.73" stroke-dashoffset="326.73"/>
+                </svg>
+                <span class="ring__label" id="ring-number" aria-hidden="true">0%</span>
+              </div>
+              <p class="ring-caption">Model confidence</p>
+            </div>
+          </div>
+
+          <div class="analyzed">
+            <h3 id="analyzed-title">Analyzed text</h3>
+            <div class="analyzed__text" id="analyzed-text" tabindex="0" role="region" aria-labelledby="analyzed-title"></div>
+          </div>
+
+          <div class="result__actions">
+            <button class="btn btn--primary" type="button" id="btn-again">
+              <svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg>
+              Analyze Another
+            </button>
+            <button class="btn btn--secondary" type="button" id="btn-edit">
+              <svg class="icon" aria-hidden="true"><use href="#i-pencil"/></svg>
+              Edit this text
+            </button>
+          </div>
+
+          <p class="disclaimer">
+            <svg class="icon" aria-hidden="true"><use href="#i-info"/></svg>
+            <span>AI predictions are probabilistic and should not be treated as definitive proof of authenticity.</span>
+          </p>
+        </section>
+      </div>
+    </section>
+
+    <!-- ===== How it works ===== -->
+    <section class="section" id="how" aria-labelledby="how-title">
+      <div class="container">
+        <div class="section__head">
+          <h2 id="how-title">How it works</h2>
+          <p>Three steps, no account, and a result in a moment.</p>
+        </div>
+        <ol class="steps">
+          <li class="step">
+            <div class="step__top">
+              <span class="step__icon" aria-hidden="true"><svg class="icon"><use href="#i-clipboard"/></svg></span>
+              <span class="step__no" aria-hidden="true">01</span>
+            </div>
+            <h3>Paste</h3>
+            <p>Paste a news article or headline.</p>
+          </li>
+          <li class="step">
+            <div class="step__top">
+              <span class="step__icon" aria-hidden="true"><svg class="icon"><use href="#i-scan"/></svg></span>
+              <span class="step__no" aria-hidden="true">02</span>
+            </div>
+            <h3>Analyze</h3>
+            <p>The machine learning model analyzes the text.</p>
+          </li>
+          <li class="step">
+            <div class="step__top">
+              <span class="step__icon" aria-hidden="true"><svg class="icon"><use href="#i-gauge"/></svg></span>
+              <span class="step__no" aria-hidden="true">03</span>
+            </div>
+            <h3>Result</h3>
+            <p>Receive a prediction with model confidence.</p>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- ===== API ===== -->
+    <section class="section" id="api" aria-labelledby="api-title">
+      <div class="container api">
+        <div>
+          <div class="section__head">
+            <h2 id="api-title">Use it from your own code</h2>
+            <p>Send text to the JSON endpoint and get a prediction and confidence back.</p>
+          </div>
+          <ul class="endpoints">
+            <li class="endpoint">
+              <span class="method method--post">POST</span>
+              <code>/api/predict</code>
+              <p>Classify a piece of news text.</p>
+            </li>
+            <li class="endpoint">
+              <span class="method method--get">GET</span>
+              <code>/api/health</code>
+              <span class="status" data-health data-state="checking" role="status">
+                <span data-health-label>Checking API…</span>
+              </span>
+              <p>Reports whether the service is running.</p>
+            </li>
+          </ul>
+          <p style="margin-top:16px">
+            <button class="btn btn--ghost" type="button" data-health-refresh>
+              <svg class="icon" aria-hidden="true"><use href="#i-refresh"/></svg>
+              Check status again
+            </button>
+          </p>
+        </div>
+
+        <div>
+          <div class="code">
+            <div class="code__head">
+              <span>Request</span>
+              <button class="btn btn--ghost" type="button" data-copy-target="code-curl" aria-label="Copy request example">
+                <svg class="icon" aria-hidden="true"><use href="#i-copy"/></svg>
+                <span data-copy-label>Copy</span>
+              </button>
+            </div>
+<pre tabindex="0"><code id="code-curl">curl -X POST <span data-origin>http://localhost:5000</span>/api/predict \
+  -H "Content-Type: application/json" \
+  -d '{"news_text": "Your news text here"}'</code></pre>
+          </div>
+
+          <div class="code">
+            <div class="code__head"><span>Request body</span></div>
+<pre tabindex="0"><code>{
+  <span class="tok-k">"news_text"</span>: <span class="tok-s">"Your news text here"</span>
+}</code></pre>
+          </div>
+
+          <div class="code">
+            <div class="code__head"><span>Response</span></div>
+<pre tabindex="0"><code>{
+  <span class="tok-k">"success"</span>: <span class="tok-n">true</span>,
+  <span class="tok-k">"prediction"</span>: <span class="tok-s">"Fake"</span>,
+  <span class="tok-k">"confidence"</span>: <span class="tok-n">0.94</span>
+}</code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== About ===== -->
+    <section class="section" id="about" aria-labelledby="about-title">
+      <div class="container about">
+        <div>
+          <div class="section__head">
+            <h2 id="about-title">About TruthLens AI</h2>
+            <p>TruthLens AI reads the text you give it and returns a label with the model's confidence.</p>
+          </div>
+          <p class="about__note">It does not check sources, verify individual facts, or search the web. Treat the result as one signal to weigh alongside your own judgment and trusted reporting.</p>
+        </div>
+
+        <ul class="tech" aria-label="Technologies used">
+          <li><strong>Machine Learning</strong><span>Classifies text as Fake or Real</span></li>
+          <li><strong>NLP</strong><span>Turns raw text into model input</span></li>
+          <li><strong>TF-IDF</strong><span>Weights words by how distinctive they are</span></li>
+          <li><strong>Scikit-learn</strong><span>Model and vectorizer</span></li>
+          <li><strong>Python</strong><span>Prediction pipeline</span></li>
+          <li><strong>Flask</strong><span>Web app and JSON API</span></li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <!-- ===== Footer ===== -->
+  <footer class="site-footer">
+    <div class="container footer__inner">
+      <p>TruthLens AI. Predictions are probabilistic and not proof of authenticity.</p>
+      <span class="status" data-health data-state="checking">
+        <span data-health-label>Checking API…</span>
+      </span>
+    </div>
+  </footer>
+
+  <script src="{{ url_for('static', filename='js/app.js') }}" defer></script>
+</body>
+</html>
